@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Invoice Generator - អ្នកបង្កើតវិក្កយបត្រ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Khmer+OS+Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary: #004D7A;
+            --primary-light: #0077B6;
+            --secondary: #50C878;
+            --dark: #1A232F;
+            --light: #F0F4F7;
+            --background: #FFFFFF;
+            --border-color: #DDE1E6;
+            --text-muted: #5A6A78;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.12);
+            --input-bg-focus: #F5F9FC;
+            --danger: #D9534F;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', 'Khmer OS Battambang', Arial, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px var(--shadow-medium);
+        }
+
+        .header-section {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            font-family: 'Khmer OS Battambang', 'Inter', sans-serif;
+        }
+
+        .subtitle { font-size: 1rem; opacity: 0.95; font-weight: 400; }
+
+        .calculator { padding: 30px; }
+
+        .calculator > h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary-light);
+            padding-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section-header {
+            grid-column: 1 / -1;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            background-color: transparent;
+            padding: 15px 0;
+            margin-top: 30px;
+            margin-bottom: 0;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .form-section-header:first-of-type { margin-top: 0; }
+
+        .form-group { margin-bottom: 0; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper input, .input-wrapper textarea {
+            width: 100%;
+            padding: 16px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1.05rem;
+            transition: all 0.2s ease-in-out;
+            background: var(--background);
+            color: var(--dark);
+            font-family: 'Inter', 'Khmer OS Battambang', sans-serif;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-wrapper input:focus, .input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background-color: var(--background); 
+        }
+
+        button {
+            padding: 16px 32px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px var(--shadow-medium);
+            border: none;
+            font-family: 'Inter', 'Khmer OS Battambang', sans-serif;
+        }
+
+        /* --- PRODUCT INVOICE STYLES (MODIFIED FOR STACKED LAYOUT ON ALL DEVICES) --- */
+        /* 1. Hide the header labels as they are confusing in a stacked layout */
+        #item-header-labels {
+            display: none; 
+            grid-column: 1 / -1;
+        }
+
+        .item-row {
+            display: block; /* Use block to stack inputs vertically */
+            gap: 15px; 
+            align-items: start;
+            margin-bottom: 25px; 
+            grid-column: 1 / -1;
+
+            /* Add the 'portrait box' styling */
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg-focus); 
+        }
+
+        /* 2. Style the inputs to stack inside the item-row */
+        .item-row > div {
+            margin-bottom: 15px; 
+        }
+
+        /* 3. Re-use the mobile label trick for all screen sizes */
+        .item-row .input-wrapper[data-label]:before {
+            content: attr(data-label); 
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        /* 4. Ensure remove button is full width and at the bottom */
+        .remove-item-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            height: auto; /* Changed from fixed height */
+            line-height: 1;
+            font-size: 1.2rem;
+            margin: 0;
+            box-shadow: none;
+            margin-top: 10px; /* Space it below the last input */
+        }
+        .remove-item-btn:hover { background-color: #c9302c; }
+
+        .add-item-btn {
+            background: var(--secondary);
+            color: white;
+            margin-top: 15px;
+            grid-column: 1 / -1;
+        }
+        .add-item-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .print-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            margin-top: 25px;
+        }
+        .print-btn:hover {
+            background-color: var(--primary-light);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* INVOICE DESIGN STYLES */
+        .invoice-container { margin-top: 40px; padding: 30px; background: white; display: none; }
+        .invoice-box { border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; background-color: #fcfdff; box-shadow: 0 4px 15px var(--shadow-light); }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 20px; }
+        .invoice-header .business-info h3 { margin: 0; font-size: 1.8rem; color: var(--primary); font-weight: 700; }
+        .invoice-header .business-info p { margin: 2px 0; color: var(--text-muted); }
+        .invoice-header .invoice-title h2 { margin: 0; font-size: 2.5rem; color: var(--text-muted); text-align: right; border-bottom: none; padding-bottom: 0; font-family: 'Khmer OS Battambang', sans-serif; }
+        .invoice-details { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .invoice-details .bill-to p, .invoice-details .invoice-meta p { margin: 2px 0; }
+        .invoice-details .bill-to strong, .invoice-details .invoice-meta strong { color: var(--dark); }
+        .invoice-details .bill-to h4, .invoice-details .invoice-meta h4 { color: var(--primary); margin-bottom: 10px; font-family: 'Khmer OS Battambang', sans-serif; }
+        .invoice-details .invoice-meta { text-align: right; }
+        .invoice-items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .invoice-items-table thead { background-color: var(--primary); color: white; }
+        .invoice-items-table th, .invoice-items-table td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-family: 'Khmer OS Battambang', 'Inter', sans-serif; }
+        .invoice-items-table th { text-align: left; font-weight: 600; }
+        .invoice-items-table td { color: var(--dark); }
+        .invoice-items-table .text-right { text-align: right; }
+        .invoice-totals { float: right; width: 45%; text-align: right; }
+        .invoice-totals .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-family: 'Khmer OS Battambang', 'Inter', sans-serif; }
+        .invoice-totals .total-row.grand-total { border-top: 2px solid var(--primary); margin-top: 10px; padding-top: 10px; font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .invoice-footer { 
+            margin-top: 80px; 
+            padding-top: 20px; 
+            border-top: none; /* Changed: Removed the grey line at the bottom total */
+            clear: both; 
+        }
+        .invoice-footer .notes h5 { color: var(--primary); margin-bottom: 5px; font-family: 'Khmer OS Battambang', sans-serif; }
+        .invoice-footer .thank-you { text-align: center; margin-top: 30px; font-size: 1.1rem; font-weight: 500; color: var(--text-muted); }
+
+        /* --- MOBILE OPTIMIZATIONS (Adjusted to account for universal item-row change) --- */
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            .container { margin: 0; border-radius: 0; box-shadow: none; }
+            .calculator { padding: 15px; } 
+            .header-section { padding: 20px; }
+            h1 { font-size: 1.6rem; }
+            .subtitle { font-size: 0.9rem; }
+            .calculator > h2 { font-size: 1.4rem; margin-bottom: 20px; padding-bottom: 10px; }
+            .form-grid { grid-template-columns: 1fr; gap: 20px; } /* Still collapses the main form to a single column */
+            .form-section-header { margin-top: 20px; padding-bottom: 10px; font-size: 1.1rem; }
+
+            .input-wrapper input, .input-wrapper textarea { padding: 12px 15px; font-size: 1rem; }
+            button { padding: 12px 20px; font-size: 1rem; }
+
+            /* item-row styles are mostly covered globally now, just adjusting spacing */
+            .item-row { margin-bottom: 15px; } 
+
+            .remove-item-btn { height: auto; padding: 10px; margin-top: 0; }
+            .add-item-btn { margin-top: 5px; } 
+
+            .invoice-box { padding: 15px; }
+            .invoice-header, .invoice-details { flex-direction: column; gap: 15px; }
+            .invoice-header .business-info h3 { font-size: 1.5rem; }
+            .invoice-header .invoice-title h2, .invoice-details .invoice-meta { text-align: left; font-size: 1.8rem; }
+            .invoice-totals { width: 100%; float: none; margin-top: 20px; }
+            .invoice-items-table th, .invoice-items-table td { padding: 8px 10px; font-size: 0.9rem; }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; font-size: 10pt; }
+            .container, .invoice-box { box-shadow: none; border: none; border-radius: 0; margin: 0; padding: 0; }
+            .invoice-container { display: block !important; margin: 0; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-section no-print">
+            <h1>កម្មវិធីបង្កើតវិក្កយបត្រ / Invoice Generator</h1>
+            <div class="subtitle">បង្កើតនិងបោះពុម្ពវិក្កយបត្រអាជីពសម្រាប់ផលិតផលរបស់អ្នក (Create and print professional invoices)</div>
+        </header>
+
+        <div class="calculator no-print">
+            <h2>ព័ត៌មានវិក្កយបត្រ / Invoice Details</h2>
+
+            <div class="form-grid">
+                <h3 class="form-section-header">ព័ត៌មានអាជីវកម្ម (Business Information)</h3>
+                <div class="form-group full-width">
+                    <label for="businessName">ឈ្មោះអាជីវកម្ម (Business Name)</label>
+                    <div class="input-wrapper"><input type="text" id="businessName" oninput="generateInvoice()" placeholder="ឈ្មោះហាងរបស់អ្នក / Your Business Name" value=""></div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="businessAddress">អាសយដ្ឋាន (Address)</label>
+                    <div class="input-wrapper"><input type="text" id="businessAddress" oninput="generateInvoice()" placeholder="អាសយដ្ឋានហាង / Your Business Address" value=""></div>
+                </div>
+                <div class="form-group">
+                    <label for="businessPhone">លេខទូរស័ព្ទ (Business Phone)</label>
+                    <div class="input-wrapper"><input type="tel" id="businessPhone" oninput="generateInvoice()" placeholder="012 345 678" value=""></div>
+                </div>
+                 <div class="form-group"></div>
+
+                <h3 class="form-section-header">អតិថិជន & វិក្កយបត្រ (Customer & Invoice)</h3>
+                <div class="form-group">
+                    <label for="customerName">ឈ្មោះអតិថិជន (Customer Name)</label>
+                    <div class="input-wrapper"><input type="text" id="customerName" oninput="generateInvoice()" placeholder="ឈ្មោះអ្នកទិញ / Customer's Name" value=""></div>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">លេខទូរស័ព្ទអតិថិជន (Customer Phone)</label>
+                    <div class="input-wrapper"><input type="tel" id="customerPhone" oninput="generateInvoice()" placeholder="099 888 777" value=""></div>
+                </div>
+                 <div class="form-group">
+                    <label for="invoiceDate">កាលបរិច្ឆេទ (Date)</label>
+                    <div class="input-wrapper"><input type="text" id="invoiceDate" oninput="generateInvoice()" value=""></div>
+                </div>
+                <div class="form-group">
+                    <label for="invoiceNo">លេខវិក្កយបត្រ (Invoice No.)</label>
+                    <div class="input-wrapper"><input type="text" id="invoiceNo" oninput="generateInvoice()" placeholder="INV-0001" value=""></div>
+                </div>
+
+                <h3 class="form-section-header">មុខទំនិញ (Billing Items)</h3>
+                <div id="item-header-labels">
+                    <div>បរិយាយ / Description</div>
+                    <div>បរិមាណ / Qty</div>
+                    <div>តម្លៃ​ឯកតា / Unit Price (៛)</div>
+                    <div></div>
+                </div>
+                <div id="billingItemsContainer" class="full-width">
+                    </div>
+                <button type="button" onclick="addItemRow()" class="add-item-btn">បន្ថែមមុខទំនិញ / Add Another Item</button>
+
+                <h3 class="form-section-header">សរុប & កំណត់សម្គាល់ (Totals & Notes)</h3>
+                <div class="form-group">
+                    <label for="taxRate">អត្រាពន្ធ (Tax Rate) (%)</label>
+                    <div class="input-wrapper"><input type="number" id="taxRate" oninput="generateInvoice()" value="0"></div>
+                </div>
+                <div class="form-group">
+                    <label for="discount">បញ្ចុះតម្លៃ (Discount) (៛)</label>
+                    <div class="input-wrapper"><input type="number" id="discount" oninput="generateInvoice()" value="0"></div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="notes">កំណត់សម្គាល់ (Notes)</label>
+                    <div class="input-wrapper"><textarea id="notes" rows="4" oninput="generateInvoice()" placeholder="សរសេរកំណត់សម្គាល់នៅទីនេះ... / Write any notes here..."></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="invoiceContainer" class="invoice-container">
+            <div id="invoiceContent"></div>
+            <button class="print-btn no-print" onclick="window.print()">បោះពុម្ពវិក្កយបត្រ (Print Invoice)</button>
+        </div>
+    </div>
+
+    <script>
+        function formatNumber(num) {
+            if (isNaN(num)) return '0';
+            return parseFloat(num).toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function addItemRow(item = { desc: '', qty: 1, price: 0 }) {
+            const container = document.getElementById('billingItemsContainer');
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.innerHTML = `
+                <div class="input-wrapper" data-label="បរិយាយ / Description">
+                    <input type="text" class="item-description" placeholder="ឈ្មោះទំនិញ / Item Name" oninput="generateInvoice()" value="${item.desc}">
+                </div>
+                <div class="input-wrapper" data-label="បរិមាណ / Quantity">
+                    <input type="number" class="item-quantity" value="${item.qty}" min="0" placeholder="Qty" oninput="generateInvoice()">
+                </div>
+                <div class="input-wrapper" data-label="តម្លៃ​ឯកតា / Unit Price (៛)">
+                    <input type="number" class="item-price" value="${item.price}" min="0" placeholder="Unit Price" oninput="generateInvoice()">
+                </div>
+                <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">×</button>
+            `;
+            container.appendChild(itemRow);
+            generateInvoice(); 
+        }
+
+        function removeItemRow(button) {
+            button.closest('.item-row').remove();
+            generateInvoice(); 
+        }
+
+        function generateInvoice() {
+            // Get static values
+            const businessName = document.getElementById('businessName').value || '';
+            const businessAddress = document.getElementById('businessAddress').value || '';
+            const businessPhone = document.getElementById('businessPhone').value || '';
+            const customerName = document.getElementById('customerName').value || '';
+            const customerPhone = document.getElementById('customerPhone').value || '';
+            const invoiceDate = document.getElementById('invoiceDate').value || '';
+            const invoiceNo = document.getElementById('invoiceNo').value || '';
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const notes = document.getElementById('notes').value.replace(/\n/g, '<br>') || '';
+
+            let subtotal = 0;
+            let itemsHTML = '';
+            const itemRows = document.querySelectorAll('.item-row');
+
+            itemRows.forEach(row => {
+                const description = row.querySelector('.item-description').value || '';
+                const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = quantity * price;
+
+                // Only show row in invoice if description or price is filled to keep invoice clean
+                if(description || price > 0) {
+                    subtotal += total;
+                    itemsHTML += `
+                        <tr>
+                            <td>${description}</td>
+                            <td class="text-right">${quantity}</td>
+                            <td class="text-right">${formatNumber(price)}</td>
+                            <td class="text-right">${formatNumber(total)}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const taxAmount = subtotal * (taxRate / 100);
+            const grandTotal = subtotal + taxAmount - discount;
+
+            const invoiceHTML = `
+                <div class="invoice-box">
+                    <header class="invoice-header">
+                        <div class="business-info">
+                            <h3>${businessName}</h3>
+                            <p>${businessAddress}</p>
+                            <p>${businessPhone}</p>
+                        </div>
+                        <div class="invoice-title"><h2>វិក្កយបត្រ / INVOICE</h2></div>
+                    </header>
+                    <section class="invoice-details">
+                        <div class="bill-to">
+                            <h4>ជូនចំពោះ / BILL TO</h4>
+                            <p><strong>${customerName}</strong></p>
+                            <p>${customerPhone}</p>
+                        </div>
+                        <div class="invoice-meta">
+                            <h4>ព័ត៌មានវិក្កយបត្រ / DETAILS</h4>
+                            <p><strong>Invoice No:</strong> ${invoiceNo}</p>
+                            <p><strong>Date:</strong> ${invoiceDate}</p>
+                        </div>
+                    </section>
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th>បរិយាយ / Description</th>
+                                <th class="text-right">បរិមាណ / Qty</th>
+                                <th class="text-right">តម្លៃ​ឯកតា / Price (៛)</th>
+                                <th class="text-right">សរុប / Total (៛)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsHTML || '<tr><td colspan="4" style="text-align:center; color:#999;">No items entered</td></tr>'}</tbody>
+                    </table>
+                    <section class="invoice-totals">
+                        <div class="total-row">
+                            <span>សរុប / Subtotal</span>
+                            <span>${formatNumber(subtotal)} ៛</span>
+                        </div>
+                        <div class="total-row">
+                            <span>ពន្ធ / Tax (${taxRate}%)</span>
+                            <span>${formatNumber(taxAmount)} ៛</span>
+                        </div>
+                        <div class="total-row">
+                            <span>បញ្ចុះតម្លៃ / Discount</span>
+                            <span>-${formatNumber(discount)} ៛</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>សរុបចុងក្រោយ / TOTAL</span>
+                            <span>${formatNumber(grandTotal)} ៛</span>
+                        </div>
+                    </section>
+                    <footer class="invoice-footer">
+                        <div class="notes">
+                            <h5>កំណត់សម្គាល់ / Notes</h5>
+                            <p>${notes}</p>
+                        </div>
+                        <div class="thank-you"><p>សូមអរគុណ! (Thank You!)</p></div>
+                    </footer>
+                </div>
+            `;
+            document.getElementById('invoiceContent').innerHTML = invoiceHTML;
+            document.getElementById('invoiceContainer').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set the current date
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = today.toLocaleDateString('en-US', options); 
+            document.getElementById('invoiceDate').value = formattedDate;
+
+            // Add one empty item row by default
+            addItemRow({ desc: '', qty: 1, price: 0 });
+        });
+    </script>
+</body>
+</html>
